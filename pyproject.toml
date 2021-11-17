@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "eduteams-cli"
+license = "Apache-2.0"
+version = "0.1.0"
+description = "eduTEAMS Command Line Interface"
+authors = ["Christos Kanellopoulos <christos.kanellopoulos@geant.org>"]
+readme = "README.md"
+homepage = "https://www.eduteams.org"
+
+[tool.poetry.scripts]
+eduteams-cli = "eduteams_cli.main:app"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+typer = {extras = ["all"], version = "^0.4.0"}
+requests = "^2.26.0"
+qrcode = "^7.3.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+black = {version = "^21.10b0", allow-prereleases = true}
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

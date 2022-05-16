@@ -14,7 +14,7 @@ poetry install
 Set the scopes that you want to request:
 
 ```sh
-export EDUTEAMS_SCOPE="openid+profile"
+export EDUTEAMS_SCOPE="openid profile"
 ```
 
 Set the client id of your application:

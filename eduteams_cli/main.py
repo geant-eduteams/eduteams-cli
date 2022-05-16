@@ -29,11 +29,13 @@ def login(
     scope: str = typer.Argument(SCOPE, envvar="EDUTEAMS_SCOPE"),
 ):
     openid_config = get_openid_config(iss)
-    response = get_device_code(openid_config, client_id, scope)
+    response = get_device_code(
+        openid_config, client_id, scope.replace("+", " ").strip()
+    )
     device_code = response.get("device_code")
     user_code = response.get("user_code")
     expire_at = int(datetime.datetime.utcnow().timestamp()) + int(
-        response.get("expire_in")
+        response.get("expires_in")
     )
     interval = response.get("interval", 5)
     verification_uri = response.get("verification_uri")
@@ -63,7 +65,7 @@ def get_openid_config(iss: str):
 def get_device_code(config: dict, client_id: str, scope: str):
     endpoint = config.get("device_authorization_endpoint")
     try:
-        r = requests.get(endpoint, params={"client_id": client_id, "scope": scope})
+        r = requests.post(endpoint, data={"client_id": client_id, "scope": scope})
         return r.json()
     except Exception:
         typer.echo("Could not retrieve device code")
@@ -85,14 +87,23 @@ def get_qr_code(data):
 def get_tokens(config, interval, client_id, device_code):
     time.sleep(interval)
     endpoint = config.get("token_endpoint")
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
     data = {
         "client_id": client_id,
         "device_code": device_code,
         "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
     }
-    r = requests.post(endpoint, data)
+    r = requests.post(endpoint, data, headers)
     status_code = r.status_code
-    body = r.json()
+    body = ""
+    try:
+        body = r.json()
+    except Exception as e:
+        raise typer.Exit()
+
+    if not body:
+        raise typer.Exit()
+
     if status_code == 400:
         error = body.get("error")
         if error == "authorization_pending":
